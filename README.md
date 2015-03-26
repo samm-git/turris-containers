@@ -11,6 +11,7 @@ Goal of the project is to add LXC containers support to the Turris router. Turri
 Currently project is on very early status, virtually nothing is done :) To use containers on Turris we will need:
 
 1. Enable LXC and Namespace support on Kernel and test that its really works. This should be an easy step - Turris is running on Recent kernel (3.10.49) so i am not expecting that any backporting will be required. Tool `lxc-checkconfig` can validate is everything is fine witht this. Currently it seems that this configuration should be required:
+
         CONFIG_KERNEL_NAMESPACES=y
         CONFIG_KERNEL_UTS_NS=y
         CONFIG_KERNEL_IPC_NS=y
