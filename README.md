@@ -37,3 +37,4 @@ Go language is not available for the OpenWRT trunk. There is a [github project](
 
 ## links
 
+- GCC Go cross compilation - https://github.com/golang/go/wiki/GccgoCrossCompilation 
