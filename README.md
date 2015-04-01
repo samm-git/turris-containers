@@ -35,6 +35,10 @@ Currently project is on very early status, virtually nothing is done :) To use c
 ## problems
 Go language is not available for the OpenWRT trunk. There is a [github project](https://github.com/GeertJohan/openwrt-go) but it will require to use EGLIBC instead of uclibc used by default. This switch itself could be dangerous. I tried to compile OpenWRT with EGLIBC but it fails with some asm related error. I have found information that it is possible to run glibc on e500v2, so it is subject to investigate (wrong gcc flags? some patches needed?). Also it is unlikely that libc change will ever be accepted by upstream. Another option is to compile golang or Docker statically to avoid host Libc usage. This could be achivable outside openwrt, using [crosstool-ng](http://crosstool-ng.org) which supports e500v2/Linux platform. Another problem is that Docker is built using gc compiler which is not ported to the PPC. There is also gccgo compiler which should work on PPC platform and there is github issue with Docker patches for gccgo (https://github.com/docker/docker/issues/9207). Probably good idea whould be to try to build docker using gccgo on native x86_64 Linux to see if it works. 
 
+## Status
+- GCCGO5 fronted succesfully compliled, there are some problems with "go" tool, see https://github.com/golang/go/issues/10310. Hello.go is working (statically compiled), to test something more complex we need to get "go" tool working.
+- Kernel with LXC/Namespaces support compiled, not tested yet (will do after getting turris playground)
+
 ## links
 
 - GCC Go cross compilation - https://github.com/golang/go/wiki/GccgoCrossCompilation 
