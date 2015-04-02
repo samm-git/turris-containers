@@ -41,5 +41,6 @@ Go language is not available for the OpenWRT trunk. There is a [github project](
 - ☑  Compile kernel with LXE support - done. 
 - ☐ Check if Namespaces/Cgroups works as expected on device
 - ☐ Build docker using gccgo/cgo
+- ☐ Create debian based image docker for repeatable builds
 - ☐ Create container with minimal openwrt
 
