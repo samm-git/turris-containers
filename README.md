@@ -1,6 +1,6 @@
 # turris-containers
 ## about
-Goal of the project is to add LXC containers support to the Turris router. Turris router is running on PPC e500v2 CPU (1200 MHzm 2 cores) with 2048 MB of RAM. This should be enough to run LXC-based containers on the device. Ability to run containers should give us some benefits, including:
+Goal of the project is to add LXC containers support to the Turris router. Turris router is running on PowerPC SPE e500v2 CPU (1200 MHzm 2 cores) with 2048 MB of RAM. This should be enough to run LXC-based containers on the device. Ability to run containers should give us some benefits, including:
 
 - better security because of service isolation
 - ability to run different Linux distribution (e.g. Debian PPC) on the same hardware, without reflashing your router
