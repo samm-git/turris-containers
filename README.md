@@ -27,6 +27,8 @@ Currently project is on very early status, virtually nothing is done :) To use c
         CONFIG_KERNEL_RESOURCE_COUNTERS=y
         CONFIG_KERNEL_MEMCG=y
         CONFIG_KERNEL_MEMCG_SWAP=y
+        
+ Also CONFIG_PACKAGE_kmod-fs-xfs should not be enabled because its conflicting with USER_NS support (see  https://bugzilla.redhat.com/show_bug.cgi?id=917708)
 
 2. Choose some container management software. Initially i was thinking about Docker, because it is already ported to ARM and code is very easy portable, but as downside - it is written on Go language, which is not officially supported on PPC/OpenWRT (see problems section). Other options to investigate: [LXD](http://www.ubuntu.com/cloud/tools/lxd), https://lxc-webpanel.github.io, http://docs.vagrantup.com/ ?
 3. ~~Choose and enable overlay FS backend: aufs (will require kernel patches), overlayfs (in kernel from 3.18, there are some [patches for 3.10](https://github.com/adilinden/overlayfs-patches), and also [in OpenWRT](https://dev.openwrt.org/browser/trunk/target/linux/generic/patches-3.10/100-overlayfs.patch)).~~ *Update: overlayfs is already in the kernel*.
