@@ -23,6 +23,7 @@ Currently project is on very early status, virtually nothing is done :) To use c
         CONFIG_KERNEL_CGROUP_DEVICE=y
         CONFIG_KERNEL_CGROUP_SCHED=y
         CONFIG_KERNEL_CGROUP_CPUACCT=y
+        KERNEL_CGROUP_FREEZER=y
         CONFIG_KERNEL_CPUSETS=y
         CONFIG_KERNEL_RESOURCE_COUNTERS=y
         CONFIG_KERNEL_MEMCG=y
