@@ -4,7 +4,7 @@
 # lxc: linux Container library
 
 # Authors:
-# Daniel Lezcano <daniel.lezcano@free.fr>
+# Alex Samorukov <samm@os2.kiev.ua>
 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -181,6 +181,7 @@ lxc.haltsignal = SIGUSR1
 # Default mount entries
 lxc.mount.entry = proc proc proc nodev,noexec,nosuid 0 0
 lxc.mount.entry = sysfs sys sysfs defaults 0 0
+lxc.mount.entry = tmpfs tmp tmpfs defaults
 # Include common configuration
 lxc.include = /usr/share/lxc/config/openwrt.common.conf
 EOF
