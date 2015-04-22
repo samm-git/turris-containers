@@ -1,0 +1,276 @@
+#!/bin/bash
+
+#
+# lxc: linux Container library
+
+# Authors:
+# Daniel Lezcano <daniel.lezcano@free.fr>
+
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+LXC_MAPPED_UID=
+LXC_MAPPED_GID=
+
+# Make sure the usual locations are in PATH
+export PATH=$PATH:/usr/sbin:/usr/bin:/sbin:/bin
+
+am_in_userns() {
+    [ -e /proc/self/uid_map ] || { echo no; return; }
+    [ "$(wc -l /proc/self/uid_map | awk '{ print $1 }')" -eq 1 ] || { echo yes; return; }
+    line=$(awk '{ print $1 " " $2 " " $3 }' /proc/self/uid_map)
+    [ "$line" = "0 0 4294967295" ] && { echo no; return; }
+    echo yes
+}
+
+in_userns=0
+[ $(am_in_userns) = "yes" ] && in_userns=1
+
+openwrt_container_configure_network() {
+	cat > etc/config/network << EOF
+config interface 'loopback'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'wan'
+	option ifname 'eth2'
+	option proto 'dhcp'
+EOF
+}
+
+openwrt_container_configure_system() {
+	cat > etc/config/system << EOF
+config system
+	option timezone 'UTC'
+	option hostname 'turris-vrt'
+
+config timeserver 'ntp'
+	list server '0.openwrt.pool.ntp.org'
+	list server '1.openwrt.pool.ntp.org'
+	list server '2.openwrt.pool.ntp.org'
+	list server '3.openwrt.pool.ntp.org'
+	option enable_server '0'
+EOF
+}
+
+openwrt_container_cleanup_rootfs() {
+	rm -rf lib/modules/*
+}
+
+openwrt_container_configure_inittab() {
+	cat > etc/inittab << EOF 
+::sysinit:/etc/init.d/rcS S boot
+::shutdown:/etc/init.d/rcS K shutdown
+console::askfirst:/bin/ash --login
+tty1::askfirst:/bin/ash --login
+tty2::askfirst:/bin/ash --login
+tty3::askfirst:/bin/ash --login
+tty4::askfirst:/bin/ash --login
+EOF
+}
+
+
+install_turrisos()
+{
+    rootfs=$1
+    name=$2
+    res=0
+
+    # download turris os image to the src
+    [ -e /tmp/turrisos.tar.gz ] || { wget -O \
+        /tmp/turrisos.tar.gz https://api.turris.cz/openwrt-repo/turris/openwrt-mpc85xx-p2020-nand-TURRISNAND-rootfs.tar.gz; }
+    mkdir -p $rootfs && \
+    cd $rootfs && \
+    tar -xzf /tmp/turrisos.tar.gz
+    return $res
+}
+
+turrisos_disable_services()
+{
+   # remove services not working inside container
+   cd etc/rc.d
+   rm -f *log *smrtd *rainbow *led *update_mac S98sysntpd
+   # disable firewall autostart
+   rm -f S19firewall
+   cd ../../
+   # remove rainbow cron job
+   rm -f etc/cron.d/rainbow
+   # remove some preinit scripts
+   rm -f lib/preinit/03_preinit_do_mpc85xx.sh lib/preinit/05_set_preinit_iface_mpc85xx
+   # fix syslogd configuration
+   sed -i 's|source(kernel)|# source(kernel)|' etc/syslog-ng.conf
+   sed -i 's|file("/proc/kmsg"|# file("/proc/kmsg"|' etc/syslog-ng.conf 
+}
+
+turrisos_add_board_info()
+{
+    mkdir -p tmp/sysinfo
+    echo rtrs01-virt > tmp/sysinfo/board_name
+    echo Turris > tmp/sysinfo/model
+    # we will replace /usr/bin/atsha204cmd with fake to make webinterface happy
+    cat <<EOF > usr/bin/atsha204cmd
+#!/bin/sh
+
+if [ ! -n "\$1" ]; then
+  echo "atsha204cmd hack for the VirtualTurris to emulate serial-number and hw-rev commands"
+  exit;
+fi
+case \$1 in
+serial-number)
+ # 1234567890123456789
+ echo 112210F47DE98115
+;;
+hw-rev)
+ echo 00000005
+;;
+esac
+EOF
+}
+
+configure_turrisos()
+{
+    rootfs=$1
+ 
+    cd $rootfs
+    openwrt_container_configure_inittab
+    openwrt_container_configure_network
+    openwrt_container_configure_system
+    openwrt_container_cleanup_rootfs
+    turrisos_disable_services
+    turrisos_add_board_info
+    return 0
+}
+
+# Generate a random hardware (MAC) address composed of FE followed by
+# 5 random bytes...
+create_hwaddr()
+{
+    openssl rand -hex 5 | sed -e 's/\(..\)/:\1/g; s/^/fe/'
+}
+
+copy_configuration()
+{
+    path=$1
+    rootfs=$2
+    name=$3
+
+grep -q "^lxc.rootfs" $path/config 2>/dev/null || echo "lxc.rootfs = $rootfs" >> $path/config
+cat <<EOF >> $path/config
+# uncomment next lines to run container in br-lan bridge
+#lxc.network.type = veth
+#lxc.network.flags = up
+#lxc.network.link = br-lan
+#lxc.network.name = eth2
+#lxc.network.hwaddr=$(create_hwaddr)
+
+# fix for lxc-stop
+lxc.haltsignal = SIGUSR1
+# Default mount entries
+lxc.mount.entry = proc proc proc nodev,noexec,nosuid 0 0
+lxc.mount.entry = sysfs sys sysfs defaults 0 0
+# Include common configuration
+lxc.include = /usr/share/lxc/config/openwrt.common.conf
+EOF
+}
+
+remap_userns()
+{
+    path=$1
+
+    if [ -n "$LXC_MAPPED_UID" ] && [ "$LXC_MAPPED_UID" != "-1" ]; then
+        chown $LXC_MAPPED_UID $path/config >/dev/null 2>&1
+        chown -R root $path/rootfs >/dev/null 2>&1
+    fi
+
+    if [ -n "$LXC_MAPPED_GID" ] && [ "$LXC_MAPPED_GID" != "-1" ]; then
+        chgrp $LXC_MAPPED_GID $path/config >/dev/null 2>&1
+        chgrp -R root $path/rootfs >/dev/null 2>&1
+    fi
+}
+
+usage()
+{
+    cat <<EOF
+$1 -h|--help -p|--path=<path>
+EOF
+    return 0
+}
+
+options=$(getopt -o hp:n: -l help,rootfs:,path:,name:,mapped-uid:,mapped-gid: -- "$@")
+if [ $? -ne 0 ]; then
+    usage $(basename $0)
+    exit 1
+fi
+eval set -- "$options"
+
+while true
+do
+    case "$1" in
+        -h|--help)      usage $0 && exit 0;;
+        -p|--path)      path=$2; shift 2;;
+        --rootfs)       rootfs=$2; shift 2;;
+        -n|--name)      name=$2; shift 2;;
+        --mapped-uid)   LXC_MAPPED_UID=$2; shift 2;;
+        --mapped-gid)   LXC_MAPPED_GID=$2; shift 2;;
+        --)             shift 1; break ;;
+        *)              break ;;
+    esac
+done
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script should be run as 'root'"
+    exit 1
+fi
+
+if [ -z "$path" ]; then
+    echo "'path' parameter is required"
+    exit 1
+fi
+
+# detect rootfs
+config="$path/config"
+if [ -z "$rootfs" ]; then
+    if grep -q '^lxc.rootfs' $config 2>/dev/null ; then
+        rootfs=$(awk -F= '/^lxc.rootfs =/{ print $2 }' $config)
+    else
+        rootfs=$path/rootfs
+    fi
+fi
+
+install_turrisos $rootfs $name
+if [ $? -ne 0 ]; then
+    echo "failed to install TurrisOS rootfs"
+    exit 1
+fi
+
+configure_turrisos $rootfs
+if [ $? -ne 0 ]; then
+    echo "failed to configure TurrisOS template"
+    exit 1
+fi
+
+copy_configuration $path $rootfs $name
+if [ $? -ne 0 ]; then
+    echo "failed to write configuration file"
+    exit 1
+fi
+
+remap_userns $path
+if [ $? -ne 0 ]; then
+    echo "failed to remap files to user"
+    exit 1
+fi
+
