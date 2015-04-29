@@ -1,6 +1,6 @@
 # turris-containers
 ## about
-Goal of the project is to add LXC containers support to the Turris router. Turris router is running on PowerPC SPE e500v2 CPU (1200 MHzm 2 cores) with 2048 MB of RAM. This should be enough to run LXC-based containers on the device. Ability to run containers should give us some benefits, including:
+Goal of the project is to add LXC and Docker containers support to the Turris router. Turris router is running on PowerPC SPE e500v2 CPU (1200 MHzm 2 cores) with 2048 MB of RAM. This should be enough to run Linux containers on the device. Ability to run containers should give us some benefits, including:
 
 - better security because of service isolation
 - ability to run different Linux distribution (e.g. Debian PPC) on the same hardware, without reflashing your router
@@ -29,21 +29,29 @@ Currently project is on very early status, virtually nothing is done :) To use c
         CONFIG_KERNEL_MEMCG=y
         CONFIG_KERNEL_MEMCG_SWAP=y
         
- Also CONFIG_PACKAGE_kmod-fs-xfs should not be enabled because its conflicting with USER_NS support (see  https://bugzilla.redhat.com/show_bug.cgi?id=917708). To use debian-unstable inside LXC container you should add line `CONFIG_MATH_EMULATION=y` to the target/linux/mpc85xx/p2020-nand/config-default file (maintainer of the powerpcspe port already contacted to resolve this). 
+ Also CONFIG_PACKAGE_kmod-fs-xfs should not be enabled because its conflicting with USER_NS support (see  https://bugzilla.redhat.com/show_bug.cgi?id=917708). To use debian-unstable inside LXC container you should add line `CONFIG_MATH_EMULATION=y` to the target/linux/mpc85xx/p2020-nand/config-default file (maintainer of the powerpcspe port already contacted to resolve this). To run docker from EXT4 volumes (e.g. external flash or sdcard) you should add `CONFIG_EXT4_FS_SECURITY=y` to the target/linux/mpc85xx/p2020-nand/config-default.
 
-2. Choose some container management software. Initially i was thinking about Docker, because it is already ported to ARM and code is very easy portable, but as downside - it is written on Go language, which is not officially supported on PPC/OpenWRT (see problems section). Other options to investigate: [LXD](http://www.ubuntu.com/cloud/tools/lxd), https://lxc-webpanel.github.io, http://docs.vagrantup.com/ ?
-3. ~~Choose and enable overlay FS backend: aufs (will require kernel patches), overlayfs (in kernel from 3.18, there are some [patches for 3.10](https://github.com/adilinden/overlayfs-patches), and also [in OpenWRT](https://dev.openwrt.org/browser/trunk/target/linux/generic/patches-3.10/100-overlayfs.patch)).~~ *Update: overlayfs is already in the kernel*.
+2. Choose some container management software. After all i decided to use lxc (it is easy to debug and already integrated to the OpenWRT and docker, because its cool ;-)
+3. Choose and enable overlay FS backend: - overlayfs is included in the OpenWRT kernel, works fine with LXC, needs some patches with docker (no support for workdir and different name in the /proc/filesystem). 
 4. Create some demo containers ) I would like to move my Asterisk from OpenWRT root so this shoud be a good starting point. 
+5. Create wp article and opkg packages
 
 ## problems
-Go language is not available for the OpenWRT trunk. There is a [github project](https://github.com/GeertJohan/openwrt-go) but it will require to use EGLIBC instead of uclibc used by default. This switch itself could be dangerous. I tried to compile OpenWRT with EGLIBC but it fails with some asm related error. I have found information that it is possible to run glibc on e500v2, so it is subject to investigate (wrong gcc flags? some patches needed?). Also it is unlikely that libc change will ever be accepted by upstream. Another option is to compile golang or Docker statically to avoid host Libc usage. This could be achivable outside openwrt, using [crosstool-ng](http://crosstool-ng.org) which supports e500v2/Linux platform. Another problem is that Docker is built using gc compiler which is not ported to the PPC. There is also gccgo compiler which should work on PPC platform and there is github issue with Docker patches for gccgo (https://github.com/docker/docker/issues/9207). Probably good idea whould be to try to build docker using gccgo on native x86_64 Linux to see if it works. 
+Go is not available on OpenWRT platform and to build it we need to use GCC 5 (gccgo in GCC4 is incomplete and buggy). After all i decided to use crosstool-ng and GCC 5.1 to compile Go in static mode. Also PPC and GCCGO support in the docker is available only in the trunk, so i had to use it. 
 
 ## Status
-- ☑ GCCGO5 Porting to turris: done, gccgo5 (gcc-5-20150329.tar.bz2) bult and tested, crosscompilation works fine, go and cgo tools are also working (tested with hello-cgo and few other projects). Static and dynamic executables are supported
-- ☐ Build all docker requirments
-- ☑ Compile kernel with LXE support - done. 
+- ☑ GCCGO5 Porting to turris: done, gccgo5 (GCC 5.1) bult and tested, crosscompilation works fine, go and cgo tools are also working (tested with hello-cgo and few other projects). Static and dynamic executables are supported
+- ☑ Build all docker compile time requirments (in fact only LVM and sqlite).
+- ☑ Compile kernel with containers support - done. 
 - ☑ Check if Namespaces/Cgroups works as expected on device - done
-- ☐ Build docker using gccgo/cgo
-- ☐ Create debian based image docker for repeatable builds
+- ☑ Build docker using gccgo/cgo - done, with a few local patches
+- ☑ Create Ububtu based image docker for repeatable builds - done, need some cleanup and publishinh
 - ☑ Create container with minimal openwrt - done, created containers with TurrisOS, Debian and Busybox-static
+- ☐ Test docker functionality: in progress. Working already:
+    - Exec Backends: native - works, LXC - broken, unable to mount
+    - Storage Backends: VFS - works, overlayfs - works, devmapper - fails, more tests needed. Other backends are untestestd
+    - Docker commands tested: attach commit events exec export history images import info inspect kill load login logout logs  pause ps pull rename restart rm rmi run save search start stats stop tag top unpause version wait
+    - Docker untested commands: cp diff port
+    - Things known to be broken: volumes, needs some debugging. LXC exec driver fails on mount - no need to fix, "native" works well. Also devicemapper backend seems to not work.
+
 
