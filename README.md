@@ -37,7 +37,7 @@ Currently project is on very early status, virtually nothing is done :) To use c
 5. Create wp article and opkg packages
 
 ## problems
-Go is not available on OpenWRT platform and to build it we need to use GCC 5 (gccgo in GCC4 is incomplete and buggy). After all i decided to use crosstool-ng and GCC 5.1 to compile Go in static mode. Also PPC and GCCGO support in the docker is available only in the trunk, so i had to use it. 
+Go is not available on OpenWRT platform and to build it we need to use GCC 5 (gccgo in GCC4 is incomplete and buggy). uClibc is also known to not work with Go. After all i decided to use crosstool-ng and GCC 5.1 to compile Go in static mode. Also PPC and GCCGO support in the docker is available only in the trunk, so i had to use it. 
 
 ## Status
 - ☑ GCCGO5 Porting to turris: done, gccgo5 (GCC 5.1) bult and tested, crosscompilation works fine, go and cgo tools are also working (tested with hello-cgo and few other projects). Static and dynamic executables are supported
