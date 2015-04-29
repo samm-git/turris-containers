@@ -7,8 +7,8 @@ Goal of the project is to add LXC and Docker containers support to the Turris ro
 - Fine grained resource control 
 - Separate network stack/routing table for the applcation
 
-## plans
-Currently project is on very early status, virtually nothing is done :) To use containers on Turris we will need:
+## Tasks
+To use containers on Turris we need to:
 
 1. Enable LXC and Namespace support on Kernel and test that its really works. This should be an easy step - Turris is running on Recent kernel (3.10.49) so i am not expecting that any backporting will be required. Tool `lxc-checkconfig` can validate is everything is fine witht this. Currently it seems that this configuration should be required:
 
