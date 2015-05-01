@@ -1,6 +1,6 @@
 . /opt/golang/configs/common.sh
 
-GOPATH=/opt/golang/goroot-ppc
+GOPATH=/opt/golang/goroot-native
 LD_LIBRARY_PATH=/opt/golang/x-tools/x86_64-linux-gnu/lib64
 
 export GOPATH LD_LIBRARY_PATH
