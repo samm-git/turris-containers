@@ -48,10 +48,9 @@ Go is not available on OpenWRT platform and to build it we need to use GCC 5 (gc
 - ☑ Create Ububtu based image docker for repeatable builds - done, need some cleanup and publishinh
 - ☑ Create container with minimal openwrt - done, created containers with TurrisOS, Debian and Busybox-static
 - ☐ Test docker functionality: in progress. Working already:
-    - Exec Backends: native - works, LXC - broken, unable to mount
+    - Exec Backends: native - works with some issues, LXC - works fine
     - Storage Backends: VFS - works, overlayfs - works, devmapper - fails, more tests needed. Other backends are untestestd
-    - Docker commands tested: attach commit events exec export history images import info inspect kill load login logout logs  pause ps pull rename restart rm rmi run save search start stats stop tag top unpause version wait cp
-    - Docker untested commands: diff port
-    - Things known to be broken: volumes, needs some debugging. LXC exec driver fails on mount - no need to fix, "native" works well. Also devicemapper backend seems to not work. Another broken part is iptables configuration. Rule `iptables --wait -t nat -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER` returns error, probably something is missing in the kernel. Workaround - run docker daemon with `--iptables=false`
+    - All docker commands are tested and known to work correctly
+    - Known issues: native exec driver hangs if its trying to start non-existing file. Probably libcontainer bug, need more debugging. 
 
 
