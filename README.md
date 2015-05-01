@@ -52,5 +52,6 @@ Go is not available on OpenWRT platform and to build it we need to use GCC 5 (gc
     - Storage Backends: VFS - works, overlayfs - works, devmapper - fails, more tests needed. Other backends are untestestd
     - All docker commands are tested and known to work correctly
     - Known issues: native exec driver hangs if its trying to start non-existing file. Probably libcontainer bug, need more debugging. 
+- ☐ Create openwrt package + some documentation (not started yet)
 
 
