@@ -1,0 +1,15 @@
+diff --git a/vendor/src/github.com/kr/pty/ztypes_ppc.go b/vendor/src/github.com/kr/pty/ztypes_ppc.go
+new file mode 100644
+index 0000000..ff0b8fd
+--- /dev/null
++++ b/vendor/src/github.com/kr/pty/ztypes_ppc.go
+@@ -0,0 +1,9 @@
++// Created by cgo -godefs - DO NOT EDIT
++// cgo -godefs types.go
++
++package pty
++
++type (
++	_C_int  int32
++	_C_uint uint32
++)

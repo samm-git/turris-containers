@@ -1,0 +1,18 @@
+--- a/vendor/src/github.com/docker/libcontainer/system/setns_linux.go
++++ b/vendor/src/github.com/docker/libcontainer/system/setns_linux.go
+@@ -14,6 +14,7 @@ var setNsMap = map[string]uintptr{
+ 	"linux/386":     346,
+ 	"linux/amd64":   308,
+ 	"linux/arm":     374,
++	"linux/ppc":     350,
+ 	"linux/ppc64":   350,
+ 	"linux/ppc64le": 350,
+ 	"linux/s390x":   339,
+--- a/vendor/src/github.com/docker/libcontainer/system/syscall_linux_64.go
++++ b/vendor/src/github.com/docker/libcontainer/system/syscall_linux_64.go
+@@ -1,4 +1,4 @@
+-// +build linux,amd64 linux,ppc64 linux,ppc64le linux,s390x
++// +build linux,amd64 linux,ppc64 linux,ppc linux,ppc64le linux,s390x
+ 
+ package system
+ 

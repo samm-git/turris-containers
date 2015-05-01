@@ -1,0 +1,18 @@
+diff -up gcc-5.1.0/libgo/runtime/go-caller.c.fix~ gcc-5.0.1-20150413/libgo/runtime/go-caller.c
+--- libgo/runtime/go-caller.c.fix~	2015-03-13 12:02:38.000000000 +0100
++++ libgo/runtime/go-caller.c	2015-04-22 14:34:56.820267279 +0200
+@@ -231,7 +231,13 @@ String runtime_funcname_go (Func *f)
+ String
+ runtime_funcname_go (Func *f)
+ {
+-  return f->name;
++  String str;
++  if (!f)
++  {
++    runtime_memclr (&str, sizeof str);
++    return str;
++  }
++  else return f->name;
+ }
+ 
+ /* Return the entry point of a function.  */

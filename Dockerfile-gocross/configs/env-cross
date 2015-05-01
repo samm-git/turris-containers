@@ -1,0 +1,11 @@
+. /opt/golang/configs/common.sh
+
+GOARCH=ppc
+GCCGO=/opt/golang/x-tools/powerpc-turris-linux-gnuspe/bin/powerpc-turris-linux-gnuspe-gccgo
+GOPATH=/opt/golang/goroot-ppc
+GOROOT=/opt/golang/x-tools/powerpc-turris-linux-gnuspe/powerpc-turris-linux-gnuspe/sysroot/lib/go/5.1.0/powerpc-turris-linux-gnuspe
+LD_LIBRARY_PATH=/opt/golang/x-tools/x86_64-linux-gnu/lib64
+CGO_ENABLED=1
+
+export GOARCH GCCGO GOPATH GOROOT LD_LIBRARY_PATH CGO_ENABLED
+
