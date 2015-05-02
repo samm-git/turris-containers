@@ -17,7 +17,8 @@ RUN cd /root && wget http://www.sqlite.org/2015/sqlite-autoconf-3080900.tar.gz &
     tar -xzf sqlite-autoconf-3080900.tar.gz && cd sqlite-autoconf-3080900 && \
     ./configure --prefix=/opt/golang/x-tools/powerpc-turris-linux-gnuspe/powerpc-turris-linux-gnuspe/sysroot/ \
     --host=powerpc-turris-linux-gnuspe && make install
-# docker configuration, FIXME
+# docker configuration, to enable btrfs backend we should cross-comoile btrfs-tools, so let disable it for now
+# aufs is n/a on the target device
 ENV DOCKER_BUILDTAGS="exclude_graphdriver_btrfs  exclude_graphdriver_aufs"
 # configure go cross compilation
 ENV GOARCH=ppc \
