@@ -18,7 +18,9 @@ RUN chown -R builder:builder /opt/golang
 WORKDIR /opt/golang
 # remove root password to allow su and switch to builder
 RUN passwd -d root
+# switch user and set home
 USER builder
+ENV HOME /opt/golang
 # grab gcc 5.1.0 source and extract it, apply patch from https://bugzilla.redhat.com/show_bug.cgi?id=1212472, 
 # remove original tar then
 RUN cd /opt/golang/src && wget http://gcc.cybermirror.org/releases/gcc-5.1.0/gcc-5.1.0.tar.bz2 \
