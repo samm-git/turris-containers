@@ -38,7 +38,7 @@ RUN mkdir gccbuild && cd gccbuild \
     && /opt/golang/src/gcc-5.1.0/configure --enable-languages=go --prefix /opt/golang/x-tools/x86_64-linux-gnu \
     && make -j10 && make install && cd /opt/golang && rm -rf gccbuild
 # add env scripts and create some links
-RUN cd /opt/golang/configs/bin && \
+RUN mkdir /opt/golang/configs/bin && cd /opt/golang/configs/bin && \
     ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/gccgo && \
     ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/go && \
     ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/gofmt
