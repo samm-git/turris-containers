@@ -36,7 +36,7 @@ RUN cd src/crosstool-ng && autoreconf -i && ./configure --prefix=/opt/golang/ct-
 RUN cd /opt/golang/ct-ng && bin/ct-ng powerpc-turris-linux-gnuspe && bin/ct-ng build && rm -rf .build
 # build native go from the same source - required to build go tools for the x86_64 platform
 RUN mkdir gccbuild && cd gccbuild \
-    && /opt/golang/src/gcc-${GCC_VERSION}/configure --disable-multiarch \
+    && /opt/golang/src/gcc-${GCC_VERSION}/configure --disable-multilib \
 	--enable-languages=go --prefix /opt/golang/x-tools/x86_64-linux-gnu \
     && make -j `nproc` && make install && cd /opt/golang && rm -rf gccbuild
 # add env scripts and create some links
