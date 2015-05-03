@@ -37,7 +37,7 @@ RUN cd /opt/golang/ct-ng &&  bin/ct-ng powerpc-turris-linux-gnuspe && bin/ct-ng 
 # build native go from the same source - required to build go tools for the x86_64 platform
 RUN mkdir gccbuild && cd gccbuild \
     && /opt/golang/src/gcc-${GCC_VERSION}/configure --enable-languages=go --prefix /opt/golang/x-tools/x86_64-linux-gnu \
-    && make -j10 && make install && cd /opt/golang && rm -rf gccbuild
+    && make -j `nproc` && make install && cd /opt/golang && rm -rf gccbuild
 # add env scripts and create some links
 RUN mkdir /opt/golang/configs/bin && cd /opt/golang/configs/bin && \
     ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/gccgo && \
