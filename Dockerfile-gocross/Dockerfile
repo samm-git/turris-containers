@@ -7,7 +7,7 @@ RUN apt-get update && apt-get upgrade -y
 # install packages required to build toolchain and native gcc
 RUN apt-get install -y  git  autoconf automake libtool gperf bison  \
     build-essential  flex texinfo wget gawk ncurses-dev libgmp-dev \
-    libmpfr-dev libmpc-dev libc6-dev-i386
+    libmpfr-dev libmpc-dev
 # lets add builder user and work from it
 RUN useradd --home /opt/golang builder
 ADD configs /opt/golang/configs/
@@ -33,10 +33,11 @@ RUN cd /opt/golang/src && git clone https://github.com/crosstool-ng/crosstool-ng
 # configure and install ct-ng
 RUN cd src/crosstool-ng && autoreconf -i && ./configure --prefix=/opt/golang/ct-ng && make install
 # build powerpcspe go
-RUN cd /opt/golang/ct-ng &&  bin/ct-ng powerpc-turris-linux-gnuspe && bin/ct-ng build && rm -rf .build
+RUN cd /opt/golang/ct-ng && bin/ct-ng powerpc-turris-linux-gnuspe && bin/ct-ng build && rm -rf .build
 # build native go from the same source - required to build go tools for the x86_64 platform
 RUN mkdir gccbuild && cd gccbuild \
-    && /opt/golang/src/gcc-${GCC_VERSION}/configure --enable-languages=go --prefix /opt/golang/x-tools/x86_64-linux-gnu \
+    && /opt/golang/src/gcc-${GCC_VERSION}/configure --disable-multiarch \
+	--enable-languages=go --prefix /opt/golang/x-tools/x86_64-linux-gnu \
     && make -j `nproc` && make install && cd /opt/golang && rm -rf gccbuild
 # add env scripts and create some links
 RUN mkdir /opt/golang/configs/bin && cd /opt/golang/configs/bin && \
