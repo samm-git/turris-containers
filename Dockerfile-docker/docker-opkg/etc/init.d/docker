@@ -1,0 +1,79 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2011 OpenWrt.org
+
+START=99
+
+USE_PROCD=1
+
+# if you need to change daemon settings - change this file
+. /etc/docker/daemon.conf
+
+cgroups_mount ()
+# based on https://raw.githubusercontent.com/tianon/cgroupfs-mount/master/cgroupfs-mount
+{
+	cgroups_error=0
+	# kernel provides cgroups?
+	if [ ! -e /proc/cgroups ]; then
+		cgroups_error=1
+		return
+	fi
+
+	# if we don't even have the directory we need, something else must be wrong
+	if [ ! -d /sys/fs/cgroup ]; then
+		cgroups_error=1
+	fi
+
+	# mount /sys/fs/cgroup if not already done
+	if ! mountpoint -q /sys/fs/cgroup; then
+		mount -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup
+	fi
+
+	cd /sys/fs/cgroup
+
+	# get/mount list of enabled cgroup controllers
+	for sys in $(awk '!/^#/ { if ($4 == 1) print $1 }' /proc/cgroups); do
+		mkdir -p $sys
+		if ! mountpoint -q $sys; then
+			if ! mount -n -t cgroup -o $sys cgroup $sys; then
+				rmdir $sys || true
+			fi
+		fi
+	done
+}
+
+cgroups_umount (){
+	# if we don't even have the directory we need, something else must be wrong
+	if [ ! -d /sys/fs/cgroup ]; then
+		return
+	fi
+
+	# if /sys/fs/cgroup is not mounted, we don't bother
+	if ! mountpoint -q /sys/fs/cgroup; then
+		return
+	fi
+
+	cd /sys/fs/cgroup
+
+	for sys in *; do
+		if mountpoint -q $sys; then
+			umount $sys
+		fi
+		if [ -d $sys ]; then
+			rmdir $sys || true
+		fi
+	done
+	cd /
+	umount /sys/fs/cgroup
+}
+
+start_service() {
+  procd_open_instance
+  cgroups_mount
+  procd_set_param command /opt/docker/bin/docker -d $DOCKER_OPTS
+  procd_set_param respawn # respawn automatically if something died, be careful if you have an alternative process supervisor
+  procd_close_instance
+}
+
+stop_service() {
+  cgroups_umount
+}

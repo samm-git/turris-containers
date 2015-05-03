@@ -1,0 +1,12 @@
+Package: docker
+Priority: optional
+Version: @docker_version
+Architecture: mpc85xx
+Section: utils
+Installed-Size: @size
+Source: https://github.com/samm-git/turris-containers/
+Maintainer: Alex Samorukov <samm@os2.kiev.ua>
+Depends: lxc, kmod-veth, kmod-ipt-extra, iptables-mod-extra
+Description: Docker is an open platform for developers and sysadmins to build, 
+	ship, and run distributed applications.
+

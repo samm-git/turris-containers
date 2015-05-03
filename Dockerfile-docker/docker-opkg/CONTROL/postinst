@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd /usr/bin
+ln -s /opt/docker/bin/docker ./

@@ -32,10 +32,21 @@ RUN mkdir -p /go/bin && cd /go/bin && ln -s /opt/golang/x-tools/x86_64-linux-gnu
     && ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/go \
     && ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/gofmt
 # get docker v 1.6.0, trunk seems to be broken
-RUN git clone -b v1.6.0 https://github.com/docker/docker /go/src/github.com/docker/docker
+ENV DOCKER_VERSION=1.6.0
+RUN git clone -b v${DOCKER_VERSION} https://github.com/docker/docker /go/src/github.com/docker/docker
 # add  PPC/gccgo patches
 ADD patches/*diff /go/src/patches/
 # patch docker
 RUN cd /go/src/github.com/docker/docker && cat /go/src/patches/*.diff | patch -p1
 # finally - compile docker
 RUN cd /go/src/github.com/docker/docker && hack/make.sh gccgo
+# install opkg tools
+RUN cd /root/ && git clone http://git.yoctoproject.org/git/opkg-utils && cd opkg-utils && make CC=gcc && make install
+# create docker ipk
+ADD docker-opkg /root/docker-opkg
+RUN cd /root/ && cp /go/src/github.com/docker/docker/bundles/${DOCKER_VERSION}/gccgo/docker-${DOCKER_VERSION} docker-opkg/opt/docker/bin/docker && \
+  cp /go/src/github.com/docker/docker/contrib/check-config.sh docker-opkg/opt/docker/bin/docker-check-config.sh && \
+  sed -i "s|@size|`du docker-opkg/ -b -s|awk '{print $1}'`|" docker-opkg/CONTROL/control && \
+  sed -i "s|@docker_version|$DOCKER_VERSION|" docker-opkg/CONTROL/control && \
+  opkg-build docker-opkg
+
