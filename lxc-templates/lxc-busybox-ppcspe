@@ -24,7 +24,7 @@ LXC_MAPPED_UID=
 LXC_MAPPED_GID=
 
 # Make sure the usual locations are in PATH
-export PATH=/tmp/busybox:$PATH:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH=/tmp/busybox-static:$PATH:/usr/sbin:/usr/bin:/sbin:/bin
 
 am_in_userns() {
     [ -e /proc/self/uid_map ] || { echo no; return; }
@@ -163,7 +163,8 @@ EOF
 configure_busybox()
 {
     rootfs=$1
-
+    mkdir -p /tmp/busybox-static
+    wget https://github.com/samm-git/turris-containers/raw/master/bin/busybox-static-ppcspe -O /tmp/busybox-static/busybox
     which busybox >/dev/null 2>&1
 
     if [ $? -ne 0 ]; then
