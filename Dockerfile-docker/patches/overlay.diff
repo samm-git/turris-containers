@@ -1,3 +1,18 @@
+diff --git a/contrib/check-config.sh b/contrib/check-config.sh
+index ac5df62..4eb3e1e 100755
+--- a/contrib/check-config.sh
++++ b/contrib/check-config.sh
+@@ -174,7 +174,7 @@ echo '- Storage Drivers:'
+ 	check_flags BLK_DEV_DM DM_THIN_PROVISIONING EXT4_FS EXT4_FS_POSIX_ACL EXT4_FS_SECURITY | sed 's/^/  /'
+ 
+ 	echo '- "'$(wrap_color 'overlay' blue)'":'
+-	check_flags OVERLAY_FS EXT4_FS_SECURITY EXT4_FS_POSIX_ACL | sed 's/^/  /'
++	check_flags OVERLAYFS_FS EXT4_FS_SECURITY EXT4_FS_POSIX_ACL | sed 's/^/  /'
+ } | sed 's/^/  /'
+ echo
+ 
+diff --git a/daemon/graphdriver/overlay/overlay.go b/daemon/graphdriver/overlay/overlay.go
+index afe12c5..c600a01 100644
 --- a/daemon/graphdriver/overlay/overlay.go
 +++ b/daemon/graphdriver/overlay/overlay.go
 @@ -149,7 +149,7 @@ func supportsOverlay() error {
