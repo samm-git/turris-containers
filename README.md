@@ -23,13 +23,13 @@ To use containers on Turris we need to:
         CONFIG_KERNEL_CGROUP_DEVICE=y
         CONFIG_KERNEL_CGROUP_SCHED=y
         CONFIG_KERNEL_CGROUP_CPUACCT=y
-        KERNEL_CGROUP_FREEZER=y
+        CONFIG_KERNEL_CGROUP_FREEZER=y
         CONFIG_KERNEL_CPUSETS=y
         CONFIG_KERNEL_RESOURCE_COUNTERS=y
         CONFIG_KERNEL_MEMCG=y
         CONFIG_KERNEL_MEMCG_SWAP=y
         
- Also CONFIG_PACKAGE_kmod-fs-xfs should not be enabled because its conflicting with USER_NS support (see  https://bugzilla.redhat.com/show_bug.cgi?id=917708). To use debian-unstable inside LXC container you should add line `CONFIG_MATH_EMULATION=y` to the target/linux/mpc85xx/p2020-nand/config-default file (maintainer of the powerpcspe port already contacted to resolve this). To run docker from EXT4 volumes (e.g. external flash or sdcard) you should add `CONFIG_EXT4_FS_SECURITY=y` to the target/linux/mpc85xx/p2020-nand/config-default.
+ Also CONFIG_PACKAGE_kmod-fs-xfs should not be enabled because its conflicting with USER_NS support (see  https://bugzilla.redhat.com/show_bug.cgi?id=917708). To use debian-unstable inside LXC container you should add line `CONFIG_MATH_EMULATION=y` to the target/linux/mpc85xx/p2020-nand/config-default file (maintainer of the powerpcspe port already contacted to resolve this). To run docker from EXT4 volumes (e.g. external flash or sdcard) you should add `CONFIG_EXT4_FS_SECURITY=y` and `CONFIG_EXT4_FS_POSIX_ACL` to the target/linux/mpc85xx/p2020-nand/config-default. `CONFIG_DM_THIN_PROVISIONING` may be needed for the devicemapper backend.
 
 2. Choose some container management software. After all i decided to use lxc (it is easy to debug and already integrated to the OpenWRT and docker, because its cool ;-)
 3. Choose and enable overlay FS backend: - overlayfs is included in the OpenWRT kernel, works fine with LXC, needs some patches with docker (no support for workdir and different name in the /proc/filesystem). 
