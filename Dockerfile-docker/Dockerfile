@@ -31,8 +31,8 @@ ENV GOARCH=ppc \
 RUN mkdir -p /go/bin && cd /go/bin && ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/gccgo \
     && ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/go \
     && ln -s /opt/golang/x-tools/x86_64-linux-gnu/bin/gofmt
-# get docker v 1.6.0, trunk seems to be broken
-ENV DOCKER_VERSION=1.6.0
+# get docker/release, trunk seems to be broken
+ENV DOCKER_VERSION=1.6.1
 RUN git clone -b v${DOCKER_VERSION} https://github.com/docker/docker /go/src/github.com/docker/docker
 # add  PPC/gccgo patches
 ADD patches/*diff /go/src/patches/
